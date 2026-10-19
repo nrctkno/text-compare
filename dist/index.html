@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Compara dos textos y encuentra cambios, líneas agregadas y líneas eliminadas."
+    />
+    <title>Entre Líneas — Comparador de textos</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header class="site-header">
+      <a class="brand" href="#top" aria-label="Entre Líneas, inicio">
+        <span class="brand-mark" aria-hidden="true">
+          <span></span><span></span><span></span>
+        </span>
+        <span>Entre Líneas</span>
+      </a>
+      <span class="header-note">Comparador de textos</span>
+    </header>
+
+    <main id="top" class="page-shell">
+      <section class="hero" aria-labelledby="page-title">
+        <p class="eyebrow">COMPARACIÓN CLARA, CAMBIO POR CAMBIO</p>
+        <h1 id="page-title">Encuentra cada diferencia<br />sin perder el hilo.</h1>
+        <p class="hero-copy">
+          Pega dos versiones de un texto. Marcamos lo que se fue, lo que llegó
+          y lo que cambió entre ambas.
+        </p>
+      </section>
+
+      <section id="results" class="results" aria-live="polite" hidden>
+        <div class="results-heading">
+          <div>
+            <p class="section-kicker">RESULTADO</p>
+            <h2 id="result-title">Diferencias encontradas</h2>
+          </div>
+          <div id="result-stats" class="result-stats" aria-label="Resumen de cambios"></div>
+        </div>
+
+        <div id="identical-message" class="identical-message" hidden>
+          <span class="identical-icon" aria-hidden="true">✓</span>
+          <div>
+            <strong>Los dos textos son idénticos.</strong>
+            <span>No encontramos ninguna diferencia.</span>
+          </div>
+        </div>
+
+        <div id="diff-grid" class="diff-grid">
+          <article class="diff-panel">
+            <div class="diff-panel-header">
+              <span class="panel-dot panel-dot-a" aria-hidden="true"></span>
+              <span>Texto A · original</span>
+            </div>
+            <pre id="diff-a" tabindex="0" aria-label="Diferencias del texto A"><code></code></pre>
+          </article>
+          <article class="diff-panel">
+            <div class="diff-panel-header">
+              <span class="panel-dot panel-dot-b" aria-hidden="true"></span>
+              <span>Texto B · nuevo</span>
+            </div>
+            <pre id="diff-b" tabindex="0" aria-label="Diferencias del texto B"><code></code></pre>
+          </article>
+        </div>
+      </section>
+
+      <section class="compare-card" aria-labelledby="compare-title">
+        <div class="card-heading">
+          <div>
+            <p class="section-kicker">TUS TEXTOS</p>
+            <h2 id="compare-title">Dos versiones, una mirada</h2>
+          </div>
+          <p>Los textos se procesan sólo en tu navegador.</p>
+        </div>
+
+        <div class="input-grid">
+          <label class="text-field">
+            <span class="field-label">
+              <span><i class="field-dot field-dot-a"></i>Texto A</span>
+              <span id="count-a">0 caracteres</span>
+            </span>
+            <textarea
+              id="text-a"
+              spellcheck="false"
+              placeholder="Pega aquí la versión original…"
+              aria-describedby="count-a"
+            ></textarea>
+          </label>
+
+          <label class="text-field">
+            <span class="field-label">
+              <span><i class="field-dot field-dot-b"></i>Texto B</span>
+              <span id="count-b">0 caracteres</span>
+            </span>
+            <textarea
+              id="text-b"
+              spellcheck="false"
+              placeholder="Pega aquí la nueva versión…"
+              aria-describedby="count-b"
+            ></textarea>
+          </label>
+        </div>
+
+        <div class="card-action">
+          <span class="shortcut">⌘ / Ctrl + Enter</span>
+          <button id="compare-button" type="button">
+            <span>Comparar textos</span>
+            <span aria-hidden="true">→</span>
+          </button>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <span>Entre Líneas</span>
+      <span>Lee los cambios. Conserva la intención.</span>
+    </footer>
+
+    <script src="app.js"></script>
+  </body>
+</html>
