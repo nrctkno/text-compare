@@ -96,17 +96,77 @@ textarea {
   padding: 24px;
 }
 
-.compare-card,
-.results {
-  padding: 24px;
+.comparison-workspace {
+  overflow: hidden;
   border: 1px solid var(--line);
   border-radius: 24px;
   background: rgba(255, 253, 248, 0.93);
   box-shadow: var(--shadow);
 }
 
+.tab-list {
+  display: flex;
+  gap: 24px;
+  overflow-x: auto;
+  padding: 0 24px;
+  border-bottom: 1px solid var(--line);
+  background: rgba(20, 33, 61, 0.025);
+  scrollbar-width: none;
+}
+
+.tab-list::-webkit-scrollbar {
+  display: none;
+}
+
+.tab-button {
+  appearance: none;
+  position: relative;
+  padding: 18px 2px 15px;
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  font-size: 0.88rem;
+  font-weight: 750;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.tab-button::after {
+  content: "";
+  position: absolute;
+  right: 0;
+  bottom: -1px;
+  left: 0;
+  height: 3px;
+  border-radius: 3px 3px 0 0;
+  background: transparent;
+}
+
+.tab-button[aria-selected="true"] {
+  color: var(--ink);
+}
+
+.tab-button[aria-selected="true"]::after {
+  background: var(--indigo);
+}
+
+.tab-button:focus-visible {
+  outline: 3px solid rgba(85, 70, 207, 0.24);
+  outline-offset: -4px;
+  border-radius: 6px;
+}
+
+.tab-button:disabled {
+  color: #a9acb4;
+  cursor: not-allowed;
+}
+
+.compare-card,
 .results {
-  margin-bottom: 28px;
+  padding: 24px;
+}
+
+.results {
   animation: rise-in 360ms ease both;
 }
 
@@ -260,6 +320,7 @@ pre:focus-visible {
   flex-wrap: wrap;
   justify-content: flex-end;
   gap: 8px;
+  margin-left: auto;
 }
 
 .stat {
@@ -441,10 +502,18 @@ pre code {
     padding: 28px 0 66px;
   }
 
+  .comparison-workspace {
+    border-radius: 18px;
+  }
+
+  .tab-list {
+    gap: 18px;
+    padding: 0 16px;
+  }
+
   .compare-card,
   .results {
     padding: 22px 16px;
-    border-radius: 18px;
   }
 
   .results-heading {
@@ -455,6 +524,7 @@ pre code {
 
   .result-stats {
     justify-content: flex-start;
+    margin-left: 0;
   }
 
   .input-grid,

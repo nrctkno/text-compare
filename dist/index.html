@@ -21,68 +21,105 @@
     </header>
 
     <main id="top" class="page-shell">
-      <section id="results" class="results" aria-live="polite" hidden>
-        <div class="results-heading">
-          <div>
-            <span id="result-title" class="result-title">(Diferencias)</span>
-          </div>
-          <div id="result-stats" class="result-stats" aria-label="Resumen de cambios"></div>
-        </div>
-
-        <div id="diff-grid" class="diff-grid">
-          <article class="diff-panel">
-            <div class="diff-panel-header">
-              <span class="panel-dot panel-dot-a" aria-hidden="true"></span>
-              <span>Original</span>
-            </div>
-            <pre id="diff-a" tabindex="0" aria-label="Diferencias del texto original"><code></code></pre>
-          </article>
-          <article class="diff-panel">
-            <div class="diff-panel-header">
-              <span class="panel-dot panel-dot-b" aria-hidden="true"></span>
-              <span>Nuevo</span>
-            </div>
-            <pre id="diff-b" tabindex="0" aria-label="Diferencias del texto nuevo"><code></code></pre>
-          </article>
-        </div>
-      </section>
-
-      <section class="compare-card" aria-labelledby="compare-title">
-        <div class="input-grid">
-          <label class="text-field">
-            <span class="field-label">
-              <span><i class="field-dot field-dot-a"></i>Original</span>
-              <span id="count-a">0 caracteres</span>
-            </span>
-            <textarea
-              id="text-a"
-              spellcheck="false"
-              placeholder="Pega aquí la versión original…"
-              aria-describedby="count-a"
-            ></textarea>
-          </label>
-
-          <label class="text-field">
-            <span class="field-label">
-              <span><i class="field-dot field-dot-b"></i>Nuevo</span>
-              <span id="count-b">0 caracteres</span>
-            </span>
-            <textarea
-              id="text-b"
-              spellcheck="false"
-              placeholder="Pega aquí la nueva versión…"
-              aria-describedby="count-b"
-            ></textarea>
-          </label>
-        </div>
-
-        <div class="card-action">
-          <span class="shortcut">⌘ / Ctrl + Enter</span>
-          <button id="compare-button" type="button">
-            <span>Comparar textos</span>
-            <span aria-hidden="true">→</span>
+      <section class="comparison-workspace" aria-label="Comparador de textos">
+        <div class="tab-list" role="tablist" aria-label="Vista del comparador">
+          <button
+            id="tab-text"
+            class="tab-button"
+            type="button"
+            role="tab"
+            aria-selected="true"
+            aria-controls="text-panel"
+          >
+            Texto
+          </button>
+          <button
+            id="tab-results"
+            class="tab-button"
+            type="button"
+            role="tab"
+            aria-selected="false"
+            aria-controls="results"
+            tabindex="-1"
+            disabled
+          >
+            Diferencias encontradas
           </button>
         </div>
+
+        <section
+          id="text-panel"
+          class="compare-card tab-panel"
+          role="tabpanel"
+          aria-labelledby="tab-text"
+        >
+          <div class="input-grid">
+            <label class="text-field">
+              <span class="field-label">
+                <span><i class="field-dot field-dot-a"></i>Original</span>
+                <span id="count-a">0 caracteres</span>
+              </span>
+              <textarea
+                id="text-a"
+                spellcheck="false"
+                placeholder="Pega aquí la versión original…"
+                aria-describedby="count-a"
+              ></textarea>
+            </label>
+
+            <label class="text-field">
+              <span class="field-label">
+                <span><i class="field-dot field-dot-b"></i>Nuevo</span>
+                <span id="count-b">0 caracteres</span>
+              </span>
+              <textarea
+                id="text-b"
+                spellcheck="false"
+                placeholder="Pega aquí la nueva versión…"
+                aria-describedby="count-b"
+              ></textarea>
+            </label>
+          </div>
+
+          <div class="card-action">
+            <span class="shortcut">⌘ / Ctrl + Enter</span>
+            <button id="compare-button" type="button">
+              <span>Comparar textos</span>
+              <span aria-hidden="true">→</span>
+            </button>
+          </div>
+        </section>
+
+        <section
+          id="results"
+          class="results tab-panel"
+          role="tabpanel"
+          aria-labelledby="tab-results"
+          aria-live="polite"
+          hidden
+        >
+          <div class="results-heading">
+            <span id="result-title" class="result-title" hidden>Sin diferencias</span>
+            <div id="result-stats" class="result-stats" aria-label="Resumen de cambios"></div>
+          </div>
+
+          <div id="diff-grid" class="diff-grid">
+            <article class="diff-panel">
+              <div class="diff-panel-header">
+                <span class="panel-dot panel-dot-a" aria-hidden="true"></span>
+                <span>Original</span>
+              </div>
+              <pre id="diff-a" tabindex="0" aria-label="Diferencias del texto original"><code></code></pre>
+            </article>
+            <article class="diff-panel">
+              <div class="diff-panel-header">
+                <span class="panel-dot panel-dot-b" aria-hidden="true"></span>
+                <span>Nuevo</span>
+              </div>
+              <pre id="diff-b" tabindex="0" aria-label="Diferencias del texto nuevo"><code></code></pre>
+            </article>
+          </div>
+        </section>
       </section>
     </main>
 

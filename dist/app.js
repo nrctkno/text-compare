@@ -3,6 +3,10 @@ const textB = document.querySelector("#text-b");
 const countA = document.querySelector("#count-a");
 const countB = document.querySelector("#count-b");
 const compareButton = document.querySelector("#compare-button");
+const workspace = document.querySelector(".comparison-workspace");
+const textTab = document.querySelector("#tab-text");
+const resultsTab = document.querySelector("#tab-results");
+const textPanel = document.querySelector("#text-panel");
 const results = document.querySelector("#results");
 const resultTitle = document.querySelector("#result-title");
 const resultStats = document.querySelector("#result-stats");
@@ -20,6 +24,40 @@ function characterLabel(value) {
 function updateCounts() {
   countA.textContent = characterLabel(textA.value);
   countB.textContent = characterLabel(textB.value);
+}
+
+function activateTab(name, focusTab = false) {
+  const showResults = name === "results";
+
+  if (showResults && resultsTab.disabled) return;
+
+  textPanel.hidden = showResults;
+  results.hidden = !showResults;
+  textTab.setAttribute("aria-selected", String(!showResults));
+  resultsTab.setAttribute("aria-selected", String(showResults));
+  textTab.tabIndex = showResults ? -1 : 0;
+  resultsTab.tabIndex = showResults ? 0 : -1;
+
+  if (focusTab) {
+    (showResults ? resultsTab : textTab).focus();
+  }
+}
+
+function handleTabKeydown(event) {
+  if (!["ArrowLeft", "ArrowRight", "Home", "End"].includes(event.key)) return;
+
+  const availableTabs = [textTab, resultsTab].filter((tab) => !tab.disabled);
+  const currentIndex = availableTabs.indexOf(document.activeElement);
+  let nextIndex = currentIndex;
+
+  if (event.key === "Home") nextIndex = 0;
+  if (event.key === "End") nextIndex = availableTabs.length - 1;
+  if (event.key === "ArrowRight") nextIndex = (currentIndex + 1) % availableTabs.length;
+  if (event.key === "ArrowLeft") nextIndex = (currentIndex - 1 + availableTabs.length) % availableTabs.length;
+
+  event.preventDefault();
+  const nextTab = availableTabs[nextIndex];
+  activateTab(nextTab === resultsTab ? "results" : "text", true);
 }
 
 function splitLines(value) {
@@ -378,14 +416,13 @@ function compareTexts() {
   const identical = before === after;
 
   resetNavigation();
-  results.hidden = false;
   diffGrid.hidden = identical;
   resultStats.hidden = identical;
+  resultTitle.hidden = !identical;
 
   if (identical) {
     resultTitle.textContent = "Sin diferencias";
   } else {
-    resultTitle.textContent = "Diferencias encontradas";
     const edits = buildLineDiff(before, after);
     const rows = alignDiff(edits);
     const stats = renderRows(rows);
@@ -396,7 +433,9 @@ function compareTexts() {
     diffB.scrollLeft = 0;
   }
 
-  results.scrollIntoView({ behavior: "smooth", block: "start" });
+  resultsTab.disabled = false;
+  activateTab("results");
+  workspace.scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
 function syncScroll(source, target) {
@@ -413,6 +452,10 @@ function syncScroll(source, target) {
 textA.addEventListener("input", updateCounts);
 textB.addEventListener("input", updateCounts);
 compareButton.addEventListener("click", compareTexts);
+textTab.addEventListener("click", () => activateTab("text"));
+resultsTab.addEventListener("click", () => activateTab("results"));
+textTab.addEventListener("keydown", handleTabKeydown);
+resultsTab.addEventListener("keydown", handleTabKeydown);
 
 document.addEventListener("keydown", (event) => {
   if ((event.metaKey || event.ctrlKey) && event.key === "Enter") {
