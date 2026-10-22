@@ -6,12 +6,12 @@ const compareButton = document.querySelector("#compare-button");
 const results = document.querySelector("#results");
 const resultTitle = document.querySelector("#result-title");
 const resultStats = document.querySelector("#result-stats");
-const identicalMessage = document.querySelector("#identical-message");
 const diffGrid = document.querySelector("#diff-grid");
 const diffA = document.querySelector("#diff-a");
 const diffB = document.querySelector("#diff-b");
 const codeA = diffA.querySelector("code");
 const codeB = diffB.querySelector("code");
+const navigationPositions = { added: 0, removed: 0, changed: 0 };
 
 function characterLabel(value) {
   return `${value.length.toLocaleString("es")} ${value.length === 1 ? "carácter" : "caracteres"}`;
@@ -288,22 +288,86 @@ function renderRows(rows) {
   return stats;
 }
 
-function statLabel(value, singular, plural) {
-  return `${value} ${value === 1 ? singular : plural}`;
+function resetNavigation() {
+  Object.keys(navigationPositions).forEach((type) => {
+    navigationPositions[type] = 0;
+  });
+
+  document.querySelectorAll(".diff-line.is-current").forEach((line) => {
+    line.classList.remove("is-current");
+  });
+}
+
+function scrollLineIntoPane(pane, line, behavior) {
+  const paneRect = pane.getBoundingClientRect();
+  const lineRect = line.getBoundingClientRect();
+  const lineTop = pane.scrollTop + lineRect.top - paneRect.top;
+  const centeredTop = lineTop - (pane.clientHeight - lineRect.height) / 2;
+
+  pane.scrollTo({ top: Math.max(0, centeredTop), behavior });
+}
+
+function navigateToChange(type, button) {
+  const configurations = {
+    added: { pane: diffB, selector: ".line-added", label: "agregada" },
+    removed: { pane: diffA, selector: ".line-removed", label: "eliminada" },
+    changed: { pane: diffB, selector: ".line-changed-right", label: "modificada" },
+  };
+  const configuration = configurations[type];
+  const lines = Array.from(configuration.pane.querySelectorAll(configuration.selector));
+
+  if (lines.length === 0) return;
+
+  const position = navigationPositions[type] % lines.length;
+  const target = lines[position];
+  const rowIndex = Array.from(target.parentElement.children).indexOf(target);
+
+  navigationPositions[type] = (position + 1) % lines.length;
+  document.querySelectorAll(".diff-line.is-current").forEach((line) => {
+    line.classList.remove("is-current");
+  });
+  resultStats.querySelectorAll(".stat.is-active").forEach((stat) => {
+    stat.classList.remove("is-active");
+  });
+
+  const leftLine = codeA.children[rowIndex];
+  const rightLine = codeB.children[rowIndex];
+
+  leftLine?.classList.add("is-current");
+  rightLine?.classList.add("is-current");
+  button.classList.add("is-active");
+  button.setAttribute(
+    "aria-label",
+    `Línea ${configuration.label} ${position + 1} de ${lines.length}. Ir a la siguiente.`,
+  );
+
+  scrollLineIntoPane(configuration.pane, target, "auto");
 }
 
 function renderStats(stats) {
   resultStats.innerHTML = "";
   const items = [
-    ["added", statLabel(stats.added, "agregada", "agregadas")],
-    ["removed", statLabel(stats.removed, "eliminada", "eliminadas")],
-    ["changed", statLabel(stats.changed, "modificada", "modificadas")],
+    ["added", stats.added, `+${stats.added}`, "agregadas"],
+    ["removed", stats.removed, `+${stats.removed}`, "eliminadas"],
+    ["changed", stats.changed, `~${stats.changed}`, "modificadas"],
   ];
 
-  items.forEach(([type, label]) => {
-    const stat = document.createElement("span");
+  items.forEach(([type, count, label, description]) => {
+    const stat = document.createElement("button");
+    stat.type = "button";
     stat.className = `stat stat-${type}`;
     stat.textContent = label;
+    stat.disabled = count === 0;
+    stat.title = count === 0
+      ? `No hay líneas ${description}`
+      : `Ir a la siguiente línea ${description.slice(0, -1)}`;
+    stat.setAttribute(
+      "aria-label",
+      count === 0
+        ? `No hay líneas ${description}`
+        : `${count} líneas ${description}. Ir a la primera; los clics siguientes avanzan.`,
+    );
+    stat.addEventListener("click", () => navigateToChange(type, stat));
     resultStats.append(stat);
   });
 }
@@ -313,15 +377,13 @@ function compareTexts() {
   const after = textB.value;
   const identical = before === after;
 
+  resetNavigation();
   results.hidden = false;
-  identicalMessage.hidden = !identical;
   diffGrid.hidden = identical;
   resultStats.hidden = identical;
 
   if (identical) {
     resultTitle.textContent = "Sin diferencias";
-    codeA.replaceChildren();
-    codeB.replaceChildren();
   } else {
     resultTitle.textContent = "Diferencias encontradas";
     const edits = buildLineDiff(before, after);
@@ -338,16 +400,13 @@ function compareTexts() {
 }
 
 function syncScroll(source, target) {
-  let syncing = false;
-
   source.addEventListener("scroll", () => {
-    if (syncing) return;
-    syncing = true;
-    target.scrollTop = source.scrollTop;
-    target.scrollLeft = source.scrollLeft;
-    requestAnimationFrame(() => {
-      syncing = false;
-    });
+    if (target.scrollTop !== source.scrollTop) {
+      target.scrollTop = source.scrollTop;
+    }
+    if (target.scrollLeft !== source.scrollLeft) {
+      target.scrollLeft = source.scrollLeft;
+    }
   });
 }
 

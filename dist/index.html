@@ -7,69 +7,51 @@
       name="description"
       content="Compara dos textos y encuentra cambios, líneas agregadas y líneas eliminadas."
     />
-    <title>Entre Líneas — Comparador de textos</title>
+    <title>Comparador de textos</title>
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
     <header class="site-header">
-      <a class="brand" href="#top" aria-label="Entre Líneas, inicio">
+      <a class="brand" href="#top" aria-label="Inicio">
         <span class="brand-mark" aria-hidden="true">
           <span></span><span></span><span></span>
         </span>
-        <span>Entre Líneas</span>
+        <span>Comparador de textos</span>
       </a>
-      <span class="header-note">Comparador de textos</span>
     </header>
 
     <main id="top" class="page-shell">
       <section id="results" class="results" aria-live="polite" hidden>
         <div class="results-heading">
           <div>
-            <p class="section-kicker">RESULTADO</p>
-            <h2 id="result-title">Diferencias encontradas</h2>
+            <span id="result-title" class="result-title">(Diferencias)</span>
           </div>
           <div id="result-stats" class="result-stats" aria-label="Resumen de cambios"></div>
-        </div>
-
-        <div id="identical-message" class="identical-message" hidden>
-          <span class="identical-icon" aria-hidden="true">✓</span>
-          <div>
-            <strong>Los dos textos son idénticos.</strong>
-            <span>No encontramos ninguna diferencia.</span>
-          </div>
         </div>
 
         <div id="diff-grid" class="diff-grid">
           <article class="diff-panel">
             <div class="diff-panel-header">
               <span class="panel-dot panel-dot-a" aria-hidden="true"></span>
-              <span>Texto A · original</span>
+              <span>Original</span>
             </div>
-            <pre id="diff-a" tabindex="0" aria-label="Diferencias del texto A"><code></code></pre>
+            <pre id="diff-a" tabindex="0" aria-label="Diferencias del texto original"><code></code></pre>
           </article>
           <article class="diff-panel">
             <div class="diff-panel-header">
               <span class="panel-dot panel-dot-b" aria-hidden="true"></span>
-              <span>Texto B · nuevo</span>
+              <span>Nuevo</span>
             </div>
-            <pre id="diff-b" tabindex="0" aria-label="Diferencias del texto B"><code></code></pre>
+            <pre id="diff-b" tabindex="0" aria-label="Diferencias del texto nuevo"><code></code></pre>
           </article>
         </div>
       </section>
 
       <section class="compare-card" aria-labelledby="compare-title">
-        <div class="card-heading">
-          <div>
-            <p class="section-kicker">TUS TEXTOS</p>
-            <h2 id="compare-title">Dos versiones, una mirada</h2>
-          </div>
-          <p>Los textos se procesan sólo en tu navegador.</p>
-        </div>
-
         <div class="input-grid">
           <label class="text-field">
             <span class="field-label">
-              <span><i class="field-dot field-dot-a"></i>Texto A</span>
+              <span><i class="field-dot field-dot-a"></i>Original</span>
               <span id="count-a">0 caracteres</span>
             </span>
             <textarea
@@ -82,7 +64,7 @@
 
           <label class="text-field">
             <span class="field-label">
-              <span><i class="field-dot field-dot-b"></i>Texto B</span>
+              <span><i class="field-dot field-dot-b"></i>Nuevo</span>
               <span id="count-b">0 caracteres</span>
             </span>
             <textarea
@@ -103,11 +85,6 @@
         </div>
       </section>
     </main>
-
-    <footer>
-      <span>Entre Líneas</span>
-      <span>Lee los cambios. Conserva la intención.</span>
-    </footer>
 
     <script src="app.js"></script>
   </body>
