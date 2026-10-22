@@ -15,7 +15,31 @@ const diffA = document.querySelector("#diff-a");
 const diffB = document.querySelector("#diff-b");
 const codeA = diffA.querySelector("code");
 const codeB = diffB.querySelector("code");
-const navigationPositions = { added: 0, removed: 0, changed: 0 };
+const tabs = [textTab, resultsTab];
+const changeTypes = {
+  added: {
+    pane: diffB,
+    selector: ".line-added",
+    symbol: "+",
+    singular: "agregada",
+    plural: "agregadas",
+  },
+  removed: {
+    pane: diffA,
+    selector: ".line-removed",
+    symbol: "+",
+    singular: "eliminada",
+    plural: "eliminadas",
+  },
+  changed: {
+    pane: diffB,
+    selector: ".line-changed-right",
+    symbol: "~",
+    singular: "modificada",
+    plural: "modificadas",
+  },
+};
+const navigationPositions = Object.fromEntries(Object.keys(changeTypes).map((type) => [type, 0]));
 
 function characterLabel(value) {
   return `${value.length.toLocaleString("es")} ${value.length === 1 ? "carácter" : "caracteres"}`;
@@ -33,20 +57,23 @@ function activateTab(name, focusTab = false) {
 
   textPanel.hidden = showResults;
   results.hidden = !showResults;
-  textTab.setAttribute("aria-selected", String(!showResults));
-  resultsTab.setAttribute("aria-selected", String(showResults));
-  textTab.tabIndex = showResults ? -1 : 0;
-  resultsTab.tabIndex = showResults ? 0 : -1;
+  const activeTab = showResults ? resultsTab : textTab;
+
+  tabs.forEach((tab) => {
+    const selected = tab === activeTab;
+    tab.setAttribute("aria-selected", String(selected));
+    tab.tabIndex = selected ? 0 : -1;
+  });
 
   if (focusTab) {
-    (showResults ? resultsTab : textTab).focus();
+    activeTab.focus();
   }
 }
 
 function handleTabKeydown(event) {
   if (!["ArrowLeft", "ArrowRight", "Home", "End"].includes(event.key)) return;
 
-  const availableTabs = [textTab, resultsTab].filter((tab) => !tab.disabled);
+  const availableTabs = tabs.filter((tab) => !tab.disabled);
   const currentIndex = availableTabs.indexOf(document.activeElement);
   let nextIndex = currentIndex;
 
@@ -244,9 +271,10 @@ function appendTokens(container, tokens, className) {
   });
 }
 
-function createLine({ number, sign, value, className, tokens, tokenClass }) {
+function createLine({ number, sign, value, className, tokens, tokenClass, rowIndex }) {
   const line = document.createElement("span");
   line.className = `diff-line ${className}`;
+  line.dataset.rowIndex = rowIndex;
 
   const lineNumber = document.createElement("span");
   lineNumber.className = "line-number";
@@ -276,28 +304,28 @@ function renderRows(rows) {
   let leftNumber = 0;
   let rightNumber = 0;
 
-  rows.forEach((row) => {
+  rows.forEach((row, rowIndex) => {
     if (row.type === "equal") {
       leftNumber += 1;
       rightNumber += 1;
-      leftFragment.append(createLine({ number: leftNumber, sign: "", value: row.left, className: "line-equal" }));
-      rightFragment.append(createLine({ number: rightNumber, sign: "", value: row.right, className: "line-equal" }));
+      leftFragment.append(createLine({ number: leftNumber, sign: "", value: row.left, className: "line-equal", rowIndex }));
+      rightFragment.append(createLine({ number: rightNumber, sign: "", value: row.right, className: "line-equal", rowIndex }));
       return;
     }
 
     if (row.type === "remove") {
       leftNumber += 1;
       stats.removed += 1;
-      leftFragment.append(createLine({ number: leftNumber, sign: "−", value: row.left, className: "line-removed" }));
-      rightFragment.append(createLine({ number: null, sign: "", value: "", className: "line-empty" }));
+      leftFragment.append(createLine({ number: leftNumber, sign: "−", value: row.left, className: "line-removed", rowIndex }));
+      rightFragment.append(createLine({ number: null, sign: "", value: "", className: "line-empty", rowIndex }));
       return;
     }
 
     if (row.type === "add") {
       rightNumber += 1;
       stats.added += 1;
-      leftFragment.append(createLine({ number: null, sign: "", value: "", className: "line-empty" }));
-      rightFragment.append(createLine({ number: rightNumber, sign: "+", value: row.right, className: "line-added" }));
+      leftFragment.append(createLine({ number: null, sign: "", value: "", className: "line-empty", rowIndex }));
+      rightFragment.append(createLine({ number: rightNumber, sign: "+", value: row.right, className: "line-added", rowIndex }));
       return;
     }
 
@@ -311,6 +339,7 @@ function renderRows(rows) {
       className: "line-changed-left",
       tokens: tokenDiff.left,
       tokenClass: "word-removed",
+      rowIndex,
     }));
     rightFragment.append(createLine({
       number: rightNumber,
@@ -318,6 +347,7 @@ function renderRows(rows) {
       className: "line-changed-right",
       tokens: tokenDiff.right,
       tokenClass: "word-added",
+      rowIndex,
     }));
   });
 
@@ -336,29 +366,24 @@ function resetNavigation() {
   });
 }
 
-function scrollLineIntoPane(pane, line, behavior) {
+function scrollLineIntoPane(pane, line) {
   const paneRect = pane.getBoundingClientRect();
   const lineRect = line.getBoundingClientRect();
   const lineTop = pane.scrollTop + lineRect.top - paneRect.top;
   const centeredTop = lineTop - (pane.clientHeight - lineRect.height) / 2;
 
-  pane.scrollTo({ top: Math.max(0, centeredTop), behavior });
+  pane.scrollTop = Math.max(0, centeredTop);
 }
 
 function navigateToChange(type, button) {
-  const configurations = {
-    added: { pane: diffB, selector: ".line-added", label: "agregada" },
-    removed: { pane: diffA, selector: ".line-removed", label: "eliminada" },
-    changed: { pane: diffB, selector: ".line-changed-right", label: "modificada" },
-  };
-  const configuration = configurations[type];
+  const configuration = changeTypes[type];
   const lines = Array.from(configuration.pane.querySelectorAll(configuration.selector));
 
   if (lines.length === 0) return;
 
   const position = navigationPositions[type] % lines.length;
   const target = lines[position];
-  const rowIndex = Array.from(target.parentElement.children).indexOf(target);
+  const rowIndex = Number(target.dataset.rowIndex);
 
   navigationPositions[type] = (position + 1) % lines.length;
   document.querySelectorAll(".diff-line.is-current").forEach((line) => {
@@ -376,34 +401,32 @@ function navigateToChange(type, button) {
   button.classList.add("is-active");
   button.setAttribute(
     "aria-label",
-    `Línea ${configuration.label} ${position + 1} de ${lines.length}. Ir a la siguiente.`,
+    `Línea ${configuration.singular} ${position + 1} de ${lines.length}. Ir a la siguiente.`,
   );
 
-  scrollLineIntoPane(configuration.pane, target, "auto");
+  scrollLineIntoPane(configuration.pane, target);
 }
 
 function renderStats(stats) {
-  resultStats.innerHTML = "";
-  const items = [
-    ["added", stats.added, `+${stats.added}`, "agregadas"],
-    ["removed", stats.removed, `+${stats.removed}`, "eliminadas"],
-    ["changed", stats.changed, `~${stats.changed}`, "modificadas"],
-  ];
+  resultStats.replaceChildren();
 
-  items.forEach(([type, count, label, description]) => {
+  Object.entries(changeTypes).forEach(([type, configuration]) => {
+    const count = stats[type];
+    const description = count === 1 ? configuration.singular : configuration.plural;
+    const lineLabel = count === 1 ? "línea" : "líneas";
     const stat = document.createElement("button");
     stat.type = "button";
     stat.className = `stat stat-${type}`;
-    stat.textContent = label;
+    stat.textContent = `${configuration.symbol}${count}`;
     stat.disabled = count === 0;
     stat.title = count === 0
-      ? `No hay líneas ${description}`
-      : `Ir a la siguiente línea ${description.slice(0, -1)}`;
+      ? `No hay líneas ${configuration.plural}`
+      : `Ir a la siguiente línea ${configuration.singular}`;
     stat.setAttribute(
       "aria-label",
       count === 0
-        ? `No hay líneas ${description}`
-        : `${count} líneas ${description}. Ir a la primera; los clics siguientes avanzan.`,
+        ? `No hay líneas ${configuration.plural}`
+        : `${count} ${lineLabel} ${description}. Ir a la primera; los clics siguientes avanzan.`,
     );
     stat.addEventListener("click", () => navigateToChange(type, stat));
     resultStats.append(stat);
@@ -420,9 +443,7 @@ function compareTexts() {
   resultStats.hidden = identical;
   resultTitle.hidden = !identical;
 
-  if (identical) {
-    resultTitle.textContent = "Sin diferencias";
-  } else {
+  if (!identical) {
     const edits = buildLineDiff(before, after);
     const rows = alignDiff(edits);
     const stats = renderRows(rows);
@@ -435,7 +456,7 @@ function compareTexts() {
 
   resultsTab.disabled = false;
   activateTab("results");
-  workspace.scrollIntoView({ behavior: "smooth", block: "start" });
+  workspace.scrollIntoView({ block: "start" });
 }
 
 function syncScroll(source, target) {
@@ -452,10 +473,10 @@ function syncScroll(source, target) {
 textA.addEventListener("input", updateCounts);
 textB.addEventListener("input", updateCounts);
 compareButton.addEventListener("click", compareTexts);
-textTab.addEventListener("click", () => activateTab("text"));
-resultsTab.addEventListener("click", () => activateTab("results"));
-textTab.addEventListener("keydown", handleTabKeydown);
-resultsTab.addEventListener("keydown", handleTabKeydown);
+tabs.forEach((tab) => {
+  tab.addEventListener("click", () => activateTab(tab === resultsTab ? "results" : "text"));
+  tab.addEventListener("keydown", handleTabKeydown);
+});
 
 document.addEventListener("keydown", (event) => {
   if ((event.metaKey || event.ctrlKey) && event.key === "Enter") {
